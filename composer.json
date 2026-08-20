@@ -1,0 +1,16 @@
+{
+    "name": "arghavan/file-control",
+    "description": "",
+    "authors": [
+        {
+            "name": "mkhodroo",
+            "email": "mkhodroo@yahoo.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "BehinFileControl\\": "src/"
+        }
+    },
+    "require": {}
+}
