@@ -97,6 +97,8 @@ class FileController extends Controller
             ];
         } else {
             $name = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $mimeType = $file->getMimeType();
+            $fileSize = $file->getSize();
 
             $full_path = public_path($dir);
             if (!is_dir($full_path)) {
@@ -114,8 +116,8 @@ class FileController extends Controller
                     'guid' => $guid,
                     'file_path' => $dir . '/' . $name,
                     'download_url' => route('file.download', ['guid' => $guid]),
-                    'mime_type' => $file->getMimeType(),
-                    'file_size' => $file->getSize(),
+                    'mime_type' => $mimeType,
+                    'file_size' => $fileSize,
                     'is_ftp' => false,
                 ]);
 
