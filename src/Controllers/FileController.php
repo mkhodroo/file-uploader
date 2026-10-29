@@ -103,7 +103,7 @@ class FileController extends Controller
                 mkdir($full_path);
             }
             $full_name = $full_path . '/' . $name;
-            $result = move_uploaded_file($file, $full_name);
+            $result = move_uploaded_file($file->getRealPath(), $full_name);
             if ($result) {
                 $guid = (string) Str::uuid();
                 $fileUrl = url($dir . '/' . $name);
@@ -136,6 +136,47 @@ class FileController extends Controller
                 'message' => trans("Error In Uploading File")
             ];
         }
+    }
+
+    /**
+     * آپلود فایل از طریق درخواست HTTP (برای استفاده پکیج‌های دیگر)
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function upload(Request $request)
+    {
+        $maxSize = config('file_control.max_file_size', 10240); // كيلو بایت
+
+        $request->validate([
+            'file' => 'required|file|max:' . $maxSize,
+        ]);
+
+        $file = $request->file('file');
+
+        // بررسی نوع فایل مجاز
+        $validTypes = config('file_control.valid_file_type', []);
+        if (!empty($validTypes) && !in_array($file->getMimeType(), $validTypes)) {
+            return response()->json([
+                'error' => 'نوع فایل مجاز نیست',
+            ], 400);
+        }
+
+        // استفاده از متد store برای ذخیره فایل و ثبت رکورد در دیتابیس
+        $result = self::store($file, 'docs', false);
+
+        if (isset($result['status']) && $result['status'] !== 200) {
+            return response()->json([
+                'error' => $result['message'] ?? 'خطا در آپلود فایل',
+            ], $result['status']);
+        }
+
+        return response()->json([
+            'url' => $result['download_url'],
+            'file_id' => $result['file_id'],
+            'guid' => $result['guid'],
+            'original_name' => $result['original_name'],
+        ]);
     }
 
     /**

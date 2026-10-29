@@ -23,6 +23,8 @@ Route::name('user-profile.')->prefix('user-profile')->middleware(['web','auth'])
 
 });
 
+Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload')->middleware(['web', 'auth']);
+
 Route::get('file/{guid}', [FileController::class, 'download'])->name('file.download');
 
 Route::prefix('file-upload-settings')->name('file-upload-settings.')->group(function () {
