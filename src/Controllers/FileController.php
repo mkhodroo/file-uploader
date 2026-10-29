@@ -73,16 +73,16 @@ class FileController extends Controller
             $downloadUrl = "https://$ftpUrl/crm/uploads/$filename";
             $guid = (string) Str::uuid();
 
-            $fileUpload = self::saveFileRecord(
-                originalName: $file->getClientOriginalName(),
-                fileName: $filename,
-                guid: $guid,
-                filePath: $downloadUrl,
-                downloadUrl: route('file.download', ['guid' => $guid]),
-                mimeType: $file->getMimeType(),
-                fileSize: $file->getSize(),
-                isFtp: true,
-            );
+            $fileUpload = self::saveFileRecord([
+                'original_name' => $file->getClientOriginalName(),
+                'file_name' => $filename,
+                'guid' => $guid,
+                'file_path' => $downloadUrl,
+                'download_url' => route('file.download', ['guid' => $guid]),
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+                'is_ftp' => true,
+            ]);
 
             return [
                 'status' => 200,
@@ -108,16 +108,16 @@ class FileController extends Controller
                 $guid = (string) Str::uuid();
                 $fileUrl = url($dir . '/' . $name);
 
-                $fileUpload = self::saveFileRecord(
-                    originalName: $file->getClientOriginalName(),
-                    fileName: $name,
-                    guid: $guid,
-                    filePath: $dir . '/' . $name,
-                    downloadUrl: route('file.download', ['guid' => $guid]),
-                    mimeType: $file->getMimeType(),
-                    fileSize: $file->getSize(),
-                    isFtp: false,
-                );
+                $fileUpload = self::saveFileRecord([
+                    'original_name' => $file->getClientOriginalName(),
+                    'file_name' => $name,
+                    'guid' => $guid,
+                    'file_path' => $dir . '/' . $name,
+                    'download_url' => route('file.download', ['guid' => $guid]),
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'is_ftp' => false,
+                ]);
 
                 return [
                     'status' => 200,
