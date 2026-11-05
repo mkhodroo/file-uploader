@@ -56,7 +56,17 @@ class FileController extends Controller
 
             $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
 
-            $remotePath = "/www/crm/uploads/$filename";
+            $remoteDir = "/www/crm/uploads";
+            $remotePath = "$remoteDir/$filename";
+
+            // بررسی وجود پوشه آپلود روی سرور FTP و در صورت عدم وجود، ایجاد آن
+            if (!self::ftpEnsureDirectoryExists($conn, $remoteDir)) {
+                ftp_close($conn);
+                return [
+                    'status' => 500,
+                    'message' => "امکان ساخت فولدر $remoteDir در سرور وجود نداره به صورت دستی فولدر رو بسازید",
+                ];
+            }
 
             $uploaded = ftp_put($conn, $remotePath, $file->getRealPath(), FTP_BINARY);
 
@@ -242,5 +252,38 @@ class FileController extends Controller
             Log::error('FileUpload save error: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * اطمینان از وجود دایرکتوری روی سرور FTP، در صورت عدم وجود سعی در ساخت آن به صورت بازگشتی می‌کند
+     *
+     * @param resource $conn
+     * @param string $path
+     * @return bool
+     */
+    protected static function ftpEnsureDirectoryExists($conn, string $path): bool
+    {
+        // اگر دایرکتوری از قبل وجود دارد
+        if (@ftp_chdir($conn, $path)) {
+            ftp_chdir($conn, '/');
+            return true;
+        }
+
+        // ساخت دایرکتوری به صورت سطح به سطح (بازگشتی)
+        $directories = explode('/', trim($path, '/'));
+        $current = '';
+        foreach ($directories as $dir) {
+            if (empty($dir)) {
+                continue;
+            }
+            $current .= '/' . $dir;
+            if (!@ftp_chdir($conn, $current)) {
+                if (!@ftp_mkdir($conn, $current)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
